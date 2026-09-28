@@ -37,6 +37,6 @@ acompanhamento remoto.
 
 **Carlos** **Luiz** **Fernanda**
 
-## 📄 Licença
+## 📌 Licença
 
 Distribuído sob a licença MIT. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
