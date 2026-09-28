@@ -7,7 +7,10 @@ PROJETO DE PRÁTICA PROFISSIONAL EM ANÁLISE E DESENVOLVIMENTO DE SISTEMAS
 
  **DECLARAÇÃO DE VISÃO**
  
-
+“Proporcionar autonomia, segurança e tranquilidade para a terceira idade, garantindo a 
+tranquilidade que o tratamento médico está sendo cumprido por meio de uma 
+experiência digital simples, acessível e humanizada, enquanto conecta idosos e seus 
+cuidadores em uma rede de cuidado contínuo.”
 
 ## 📌 Sobre o projeto
 
