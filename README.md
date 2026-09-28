@@ -1,8 +1,7 @@
 # PPP_ADS_NEEDHEAL
 PROJETO DE PRÁTICA PROFISSIONAL EM ANÁLISE E DESENVOLVIMENTO DE SISTEMAS
 
-
-
+<img width="1254" height="1254" alt="WhatsApp Image 2026-09-26 at 13 40 10" src="https://github.com/user-attachments/assets/546494f8-0459-42c5-8c9b-78f8c253e68c" />
 
 # 📌 Need Heal
 
