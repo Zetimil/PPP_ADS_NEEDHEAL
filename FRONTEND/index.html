@@ -1,0 +1,195 @@
+
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NEEDHEAL - Lembrete de Medicamentos</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+    <!-- CABEÇALHO -->
+   <header class="header">
+    <div class="logo">
+        <img src="logo.png" alt="NEEDHEAL"
+             class="logo-icon">
+    </div>
+
+    <button class="btn-sair" onclick="logout()">
+        Sair
+    </button>
+</header>
+
+    <!-- LOGIN -->
+    <section id="loginSection" class="login-section">
+        <div class="login-card">
+            <h2>Bem-vindo ao NEEDHEAL!</h2>
+            <p>Entre ou crie sua conta para continuar.</p>
+
+            <form id="loginForm">
+                <label>Seu nome</label>
+                <input type="text" id="loginNome"
+                       placeholder="Digite seu nome" required>
+
+                <label>Senha</label>
+                <input type="password" id="loginSenha"
+                       placeholder="Digite sua senha" required>
+
+                <button class="btn-primary" type="submit">
+                    Entrar
+                </button>
+            </form>
+
+            <p class="cadastro-link">
+                Ainda não tem conta?
+                <button onclick="mostrarCadastro()">
+                    Criar conta
+                </button>
+            </p>
+
+            <div id="cadastroBox" class="cadastro-box hidden">
+                <h3>Criar minha conta</h3>
+
+                <form id="cadastroForm">
+                    <label>Nome completo</label>
+                    <input type="text" id="cadastroNome"
+                           required placeholder="Nome completo">
+
+                    <label>Senha</label>
+                    <input type="password" id="cadastroSenha"
+                           required minlength="4"
+                           placeholder="Crie uma senha">
+
+                    <button class="btn-primary" type="submit">
+                        Cadastrar
+                    </button>
+                </form>
+            </div>
+        </div>
+    </section>
+
+    <!-- SITE PRINCIPAL -->
+    <main id="app" class="container hidden">
+
+        <section class="welcome">
+            <div>
+                <h2>Olá, <span id="nomeUsuario">Usuário</span>!</h2>
+                <p>Vamos cuidar da sua saúde hoje?</p>
+            </div>
+            <div class="welcome-icon">💚</div>
+        </section>
+
+        <!-- RESUMO -->
+        <section class="resumo">
+            <div class="resumo-card azul">
+                <span>💊</span>
+                <h3 id="totalRemedios">0</h3>
+                <p>Medicamentos cadastrados</p>
+            </div>
+
+            <div class="resumo-card verde">
+                <span>⏰</span>
+                <h3 id="totalHoje">0</h3>
+                <p>Lembretes para hoje</p>
+            </div>
+
+            <div class="resumo-card laranja">
+                <span>✓</span>
+                <h3 id="totalTomados">0</h3>
+                <p>Medicamentos tomados hoje</p>
+            </div>
+        </section>
+
+        <!-- CADASTRO DE MEDICAMENTOS -->
+        <section class="card">
+            <h2>➕ Cadastrar medicamento</h2>
+            <p class="descricao">
+                Preencha as informações do seu medicamento.
+            </p>
+
+            <form id="medicamentoForm">
+
+                <label>Nome do medicamento</label>
+                <input type="text" id="medNome"
+                       placeholder="Ex: Paracetamol" required>
+
+                <label>Dosagem</label>
+                <input type="text" id="medDosagem"
+                       placeholder="Ex: 500 mg" required>
+
+                <label>Horário de tomar</label>
+                <input type="time" id="medHorario" required>
+
+                <label>Frequência</label>
+                <select id="medFrequencia">
+                    <option value="Todos os dias">Todos os dias</option>
+                    <option value="Segunda a sexta">Segunda a sexta</option>
+                    <option value="Somente uma vez">Somente uma vez</option>
+                </select>
+
+                <label>Foto do medicamento</label>
+                <input type="file" id="medFoto"
+                       accept="image/*">
+
+                <img id="previewFoto" class="preview-foto hidden"
+                     alt="Prévia do medicamento">
+
+                <button type="submit" class="btn-primary">
+                    Salvar medicamento
+                </button>
+            </form>
+        </section>
+
+        <!-- LEMBRETES -->
+        <section class="card">
+            <div class="titulo-linha">
+                <h2>⏰ Meus lembretes</h2>
+                <button class="btn-secondary"
+                        onclick="ativarNotificacoes()">
+                    Ativar notificações
+                </button>
+            </div>
+
+            <p class="descricao">
+                Confira os medicamentos e seus horários.
+            </p>
+
+            <div id="listaMedicamentos" class="lista-medicamentos">
+                <p class="vazio">Nenhum medicamento cadastrado.</p>
+            </div>
+        </section>
+
+        <!-- HISTÓRICO -->
+        <section class="card">
+            <h2>📋 Histórico de medicamentos</h2>
+            <p class="descricao">
+                Veja os medicamentos que você marcou como tomados.
+            </p>
+
+            <div id="historico" class="historico">
+                <p class="vazio">Nenhum medicamento tomado ainda.</p>
+            </div>
+        </section>
+
+        <!-- ADMINISTRADOR -->
+        <section id="adminSection" class="card hidden">
+            <h2>⚙️ Painel do administrador</h2>
+            <p class="descricao">
+                Gerencie os usuários cadastrados neste navegador.
+            </p>
+
+            <div id="listaUsuarios"></div>
+        </section>
+
+    </main>
+
+    <footer>
+        <p>NEEDHEAL © 2026 - Cuidando de você com carinho 💚</p>
+        <p>Este site não substitui orientações médicas.</p>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
