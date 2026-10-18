@@ -22,53 +22,128 @@
     </button>
 </header>
 
-    <!-- LOGIN -->
-    <section id="loginSection" class="login-section">
-        <div class="login-card">
-            <h2>Bem-vindo ao NEEDHEAL!</h2>
-            <p>Entre ou crie sua conta para continuar.</p>
+ 
+<!-- LOGIN -->
+<section id="loginSection" class="login-section">
+    <div class="login-card">
+        <h2>Bem-vindo ao NEEDHEAL!</h2>
+        <p>Entre ou crie sua conta para continuar.</p>
 
-            <form id="loginForm">
-                <label>Seu nome</label>
-                <input type="text" id="loginNome"
-                       placeholder="Digite seu nome" required>
+        <form id="loginForm">
+            <label for="loginNome">Seu nome</label>
+            <input type="text" id="loginNome"
+                   placeholder="Digite seu nome" required>
 
-                <label>Senha</label>
-                <input type="password" id="loginSenha"
-                       placeholder="Digite sua senha" required>
+            <label for="loginSenha">Senha</label>
+            <input type="password" id="loginSenha"
+                   placeholder="Digite sua senha" required>
+
+            <button class="btn-primary" type="submit">
+                Entrar
+            </button>
+        </form>
+
+        <p class="cadastro-link">
+            Ainda não tem conta?
+            <button type="button" onclick="mostrarCadastro()">
+                Criar conta
+            </button>
+        </p>
+
+        <p class="cadastro-link">
+            <button type="button" onclick="mostrarRecuperacao()">
+                Esqueci minha senha
+            </button>
+        </p>
+
+        <!-- CADASTRO -->
+        <div id="cadastroBox" class="cadastro-box hidden">
+            <h3>Criar minha conta</h3>
+
+            <form id="cadastroForm">
+                <label for="cadastroNome">Nome completo</label>
+                <input type="text" id="cadastroNome"
+                       required placeholder="Nome completo">
+
+                <label for="cadastroEmail">E-mail</label>
+                <input type="email" id="cadastroEmail"
+                       required autocomplete="email"
+                       placeholder="seuemail@exemplo.com">
+
+                <label for="cadastroSenha">Senha</label>
+                <input type="password" id="cadastroSenha"
+                       required minlength="12"
+                       autocomplete="new-password"
+                       placeholder="Crie uma senha">
 
                 <button class="btn-primary" type="submit">
-                    Entrar
+                    Cadastrar
+                </button>
+            </form>
+        </div>
+
+        <!-- RECUPERAÇÃO DE SENHA -->
+        <div id="recuperacaoBox" class="cadastro-box hidden">
+            <h3>Recuperar senha</h3>
+            <p>Informe o e-mail cadastrado para receber as instruções.</p>
+
+            <form id="recuperacaoForm">
+                <label for="recuperacaoEmail">E-mail cadastrado</label>
+                <input type="email" id="recuperacaoEmail"
+                       required autocomplete="email"
+                       placeholder="seuemail@exemplo.com">
+
+                <button class="btn-primary" type="submit">
+                    Enviar instruções
                 </button>
             </form>
 
-            <p class="cadastro-link">
-                Ainda não tem conta?
-                <button onclick="mostrarCadastro()">
-                    Criar conta
-                </button>
-            </p>
+            <p id="mensagemRecuperacao" role="status"
+               aria-live="polite"></p>
 
-            <div id="cadastroBox" class="cadastro-box hidden">
-                <h3>Criar minha conta</h3>
-
-                <form id="cadastroForm">
-                    <label>Nome completo</label>
-                    <input type="text" id="cadastroNome"
-                           required placeholder="Nome completo">
-
-                    <label>Senha</label>
-                    <input type="password" id="cadastroSenha"
-                           required minlength="4"
-                           placeholder="Crie uma senha">
-
-                    <button class="btn-primary" type="submit">
-                        Cadastrar
-                    </button>
-                </form>
-            </div>
+            <button type="button" onclick="mostrarLogin()">
+                Voltar ao login
+            </button>
         </div>
-    </section>
+
+        <!-- REDEFINIÇÃO DE SENHA -->
+        <div id="redefinicaoBox" class="cadastro-box hidden">
+            <h3>Redefinir senha</h3>
+            <p>Digite o código recebido e crie uma nova senha.</p>
+
+            <form id="redefinicaoForm">
+                <label for="codigoRecuperacao">Código de recuperação</label>
+                <input type="text" id="codigoRecuperacao"
+                       required autocomplete="one-time-code"
+                       placeholder="Código recebido">
+
+                <label for="novaSenha">Nova senha</label>
+                <input type="password" id="novaSenha"
+                       required minlength="12"
+                       autocomplete="new-password"
+                       placeholder="Nova senha">
+
+                <label for="confirmarSenha">Confirmar nova senha</label>
+                <input type="password" id="confirmarSenha"
+                       required minlength="12"
+                       autocomplete="new-password"
+                       placeholder="Repita a nova senha">
+
+                <button class="btn-primary" type="submit">
+                    Salvar nova senha
+                </button>
+            </form>
+
+            <p id="mensagemRedefinicao" role="status"
+               aria-live="polite"></p>
+
+            <button type="button" onclick="mostrarLogin()">
+                Voltar ao login
+            </button>
+        </div>
+    </div>
+</section>
+
 
     <!-- SITE PRINCIPAL -->
     <main id="app" class="container hidden">
