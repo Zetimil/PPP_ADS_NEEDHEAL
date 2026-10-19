@@ -510,3 +510,18 @@ footer {
     color: var(--azul-escuro);
     width: 100%;
 }
+
+/* RECUPERAÇÃO DE SENHA */
+.esqueceu-senha-link {
+    margin-top: 10px;
+    text-align: center;
+    font-size: 16px;
+}
+
+.esqueceu-senha-link button {
+    background: none;
+    color: var(--azul);
+    padding: 5px;
+    font-size: 16px;
+    text-decoration: underline;
+}
