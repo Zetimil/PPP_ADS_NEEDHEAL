@@ -48,7 +48,13 @@
                     Criar conta
                 </button>
             </p>
-
+    <!-- Link de esqueci a senha -->
+<p class="esqueceu-senha-link">
+    Esqueceu sua senha?
+    <button type="button" onclick="mostrarRecuperacao()">
+        Recuperar senha
+    </button>
+</p>
             <div id="cadastroBox" class="cadastro-box hidden">
                 <h3>Criar minha conta</h3>
 
@@ -69,7 +75,23 @@
             </div>
         </div>
     </section>
+<!-- BOX DE RECUPERAÇÃO DE SENHA (NOVO) -->
+<div id="recuperacaoBox" class="cadastro-box hidden">
+    <h3>Recuperar minha senha</h3>
 
+    <form id="recuperacaoForm">
+        <label for="recuperaNome">Seu nome de usuário</label>
+        <input type="text" id="recuperaNome" required placeholder="Digite seu nome cadastrado">
+
+        <label for="recuperaNovaSenha">Nova senha</label>
+        <input type="password" id="recuperaNovaSenha" required minlength="4" placeholder="Digite a nova senha">
+
+        <button class="btn-primary" type="submit">
+            Redefinir senha
+        </button>
+    </form>
+</div>
+    
     <!-- SITE PRINCIPAL -->
     <main id="app" class="container hidden">
 
