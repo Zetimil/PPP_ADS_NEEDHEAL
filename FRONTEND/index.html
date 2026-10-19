@@ -156,7 +156,39 @@
                 </button>
             </form>
         </section>
+        
+<!-- MODAL PARA EDITAR MEDICAMENTO -->
+<div id="modalEditarMed" class="modal hidden">
+    <div class="modal-content card">
+        <h2>✏️ Editar medicamento</h2>
+        
+        <form id="editarMedicamentoForm">
+            <!-- Guarda o id/índice do medicamento sendo editado -->
+            <input type="hidden" id="editMedId">
 
+            <label for="editMedNome">Nome do medicamento</label>
+            <input type="text" id="editMedNome" required>
+
+            <label for="editMedDosagem">Dosagem</label>
+            <input type="text" id="editMedDosagem" required>
+
+            <label for="editMedHorario">Horário de tomar</label>
+            <input type="time" id="editMedHorario" required>
+
+            <label for="editMedFrequencia">Frequência</label>
+            <select id="editMedFrequencia">
+                <option value="Todos os dias">Todos os dias</option>
+                <option value="Segunda a sexta">Segunda a sexta</option>
+                <option value="Somente uma vez">Somente uma vez</option>
+            </select>
+
+            <div style="margin-top: 15px; display: flex; gap: 10px;">
+                <button type="submit" class="btn-primary">Salvar Alterações</button>
+                <button type="button" class="btn-secondary" onclick="fecharModalEdicao()">Cancelar</button>
+            </div>
+        </form>
+    </div>
+</div>
         <!-- LEMBRETES -->
         <section class="card">
             <div class="titulo-linha">
