@@ -90,6 +90,52 @@ document.getElementById("cadastroForm").addEventListener("submit", function(even
     document.getElementById("cadastroBox").classList.add("hidden");
 });
 
+// EXIBIR / OCULTAR BOX DE RECUPERAÇÃO
+function mostrarRecuperacao() {
+    // Se o cadastro estiver aberto, fecha ele
+    document.getElementById("cadastroBox").classList.add("hidden");
+    // Alterna a exibição da recuperação
+    document.getElementById("recuperacaoBox").classList.toggle("hidden");
+}
+
+// Atualize a função mostrarCadastro existente para fechar a recuperação se aberta
+function mostrarCadastro() {
+    document.getElementById("recuperacaoBox").classList.add("hidden");
+    document.getElementById("cadastroBox").classList.toggle("hidden");
+}
+
+// LOGICA DE REDEFINIÇÃO DE SENHA
+document.getElementById("recuperacaoForm").addEventListener("submit", function(event) {
+    event.preventDefault();
+
+    const nome = document.getElementById("recuperaNome").value.trim();
+    const novaSenha = document.getElementById("recuperaNovaSenha").value;
+
+    // Busca o usuário na lista
+    const usuario = usuarios.find(u => u.nome.toLowerCase() === nome.toLowerCase());
+
+    if (!usuario) {
+        alert("Usuário não encontrado! Verifique o nome digitado.");
+        return;
+    }
+
+    // Atualiza a senha do usuário
+    usuario.senha = novaSenha;
+
+    // Salva a alteração no localStorage
+    salvarUsuarios();
+
+    alert("Senha redefinida com sucesso! Você já pode fazer login.");
+
+    // Preenche o formulário de login com as novas credenciais
+    document.getElementById("loginNome").value = usuario.nome;
+    document.getElementById("loginSenha").value = novaSenha;
+
+    // Reseta e esconde o formulário de recuperação
+    this.reset();
+    document.getElementById("recuperacaoBox").classList.add("hidden");
+});
+
 // LOGIN
 document.getElementById("loginForm").addEventListener("submit", function(event) {
     event.preventDefault();
