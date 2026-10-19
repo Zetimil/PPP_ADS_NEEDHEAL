@@ -172,6 +172,9 @@ function iniciarSite() {
     document.getElementById("nomeUsuario")
         .textContent = usuario.nome;
 
+    if (document.getElementById("perfilNomeText")) {
+        document.getElementById("perfilNomeText").textContent = usuario.nome;
+    }
     if (usuario.admin) {
         document.getElementById("adminSection")
             .classList.remove("hidden");
@@ -637,3 +640,88 @@ document.addEventListener("DOMContentLoaded", function() {
 
 // VERIFICA OS LEMBRETES A CADA SEGUNDO
 setInterval(verificarLembretes, 1000);
+
+// ==========================================
+// LÓGICA DE EDIÇÃO DO PERFIL DO USUÁRIO
+// ==========================================
+
+function alternarEdicaoPerfil(editando) {
+    const perfilExibicao = document.getElementById("perfilExibicao");
+    const perfilForm = document.getElementById("perfilForm");
+    const perfilNomeInput = document.getElementById("perfilNomeInput");
+
+    if (editando) {
+        perfilForm.classList.remove("hidden");
+        perfilExibicao.classList.add("hidden");
+        perfilNomeInput.value = usuarioAtual;
+    } else {
+        perfilForm.classList.add("hidden");
+        perfilExibicao.classList.remove("hidden");
+    }
+}
+
+// Ouvinte para salvar as alterações do perfil
+const perfilFormElement = document.getElementById("perfilForm");
+if (perfilFormElement) {
+    perfilFormElement.addEventListener("submit", function(event) {
+        event.preventDefault();
+
+        const novoNome = document.getElementById("perfilNomeInput").value.trim();
+
+        if (!novoNome) return;
+
+        // Se o nome não mudou, apenas fecha o formulário
+        if (novoNome === usuarioAtual) {
+            alternarEdicaoPerfil(false);
+            return;
+        }
+
+        // Verifica se o novo nome já existe no sistema
+        const jaExiste = usuarios.some(u => 
+            u.nome.toLowerCase() === novoNome.toLowerCase() && u.nome !== usuarioAtual
+        );
+
+        if (jaExiste) {
+            alert("Este nome já está em uso por outro usuário!");
+            return;
+        }
+
+        const nomeAntigo = usuarioAtual;
+
+        // 1. Atualiza na lista de usuários
+        const usuarioObj = usuarios.find(u => u.nome === nomeAntigo);
+        if (usuarioObj) {
+            usuarioObj.nome = novoNome;
+        }
+
+        // 2. Atualiza o vínculo nos medicamentos existentes
+        medicamentos.forEach(m => {
+            if (m.usuario === nomeAntigo) {
+                m.usuario = novoNome;
+            }
+        });
+
+        // 3. Atualiza o vínculo no histórico de medicamentos
+        historico.forEach(h => {
+            if (h.usuario === nomeAntigo) {
+                h.usuario = novoNome;
+            }
+        });
+
+        // 4. Atualiza a sessão atual
+        usuarioAtual = novoNome;
+        localStorage.setItem("nh_usuario", novoNome);
+
+        // 5. Salva no localStorage
+        salvarUsuarios();
+        salvarMedicamentos();
+        salvarHistorico();
+
+        // 6. Atualiza a interface
+        document.getElementById("perfilNomeText").textContent = novoNome;
+        document.getElementById("nomeUsuario").textContent = novoNome;
+
+        alternarEdicaoPerfil(false);
+        alert("Perfil atualizado com sucesso!");
+    });
+}

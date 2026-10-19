@@ -81,6 +81,29 @@
             <div class="welcome-icon">💚</div>
         </section>
 
+        <!-- PERFIL DO USUÁRIO (EDITÁVEL) -->
+        <section class="card">
+            <h2>👤 Meu Perfil</h2>
+            
+            <!-- Exibição do Perfil -->
+            <div id="perfilExibicao">
+                <p><strong>Nome:</strong> <span id="perfilNomeText">Usuário</span></p>
+                <button class="btn-secondary" onclick="alternarEdicaoPerfil(true)">
+                    Editar perfil
+                </button>
+            </div>
+
+            <!-- Formulário de Edição do Perfil (Inicia escondido) -->
+            <form id="perfilForm" class="hidden">
+                <label for="perfilNomeInput">Novo nome</label>
+                <input type="text" id="perfilNomeInput" required placeholder="Digite seu novo nome">
+
+                <div style="margin-top: 10px; display: flex; gap: 10px;">
+                    <button type="submit" class="btn-primary">Salvar alterações</button>
+                    <button type="button" class="btn-secondary" onclick="alternarEdicaoPerfil(false)">Cancelar</button>
+                </div>
+            </form>
+        </section>
         <!-- RESUMO -->
         <section class="resumo">
             <div class="resumo-card azul">
