@@ -725,3 +725,120 @@ if (perfilFormElement) {
         alert("Perfil atualizado com sucesso!");
     });
 }
+
+// Array global de medicamentos (carregado do localStorage ou da sessão do usuário)
+let medicamentos = JSON.parse(localStorage.getItem('medicamentos')) || [];
+
+// 1. RENDERIZAR A LISTA DE MEDICAMENTOS (Com botão de Editar)
+function renderizarMedicamentos() {
+    const listaContainer = document.getElementById('listaMedicamentos');
+    listaContainer.innerHTML = '';
+
+    if (medicamentos.length === 0) {
+        listaContainer.innerHTML = '<p class="vazio">Nenhum medicamento cadastrado.</p>';
+        return;
+    }
+
+    medicamentos.forEach((med, index) => {
+        const itemDiv = document.createElement('div');
+        itemDiv.className = 'medicamento-item';
+        
+        itemDiv.innerHTML = `
+            <div class="med-info">
+                ${med.foto ? `<img src="${med.foto}" alt="${med.nome}" class="med-thumb">` : ''}
+                <div>
+                    <h4>${med.nome} - <small>${med.dosagem}</small></h4>
+                    <p>⏰ ${med.horario} | 🔄 ${med.frequencia}</p>
+                </div>
+            </div>
+            <div class="med-acoes">
+                <button class="btn-secondary" onclick="prepararEdicaoMedicamento(${index})">✏️ Editar</button>
+                <button class="btn-danger" onclick="excluirMedicamento(${index})">🗑️ Excluir</button>
+            </div>
+        `;
+        listaContainer.appendChild(itemDiv);
+    });
+
+    atualizarResumos();
+}
+
+// 2. PREPARAR FORMULÁRIO PARA EDIÇÃO
+function prepararEdicaoMedicamento(index) {
+    const med = medicamentos[index];
+
+    // Preenche os campos do formulário
+    document.getElementById('medId').value = index;
+    document.getElementById('medNome').value = med.nome;
+    document.getElementById('medDosagem').value = med.dosagem;
+    document.getElementById('medHorario').value = med.horario;
+    document.getElementById('medFrequencia').value = med.frequencia;
+
+    // Altera interface para modo de edição
+    document.getElementById('tituloFormMed').innerText = '✏️ Editar medicamento';
+    document.getElementById('btnSalvarMed').innerText = 'Atualizar medicamento';
+    document.getElementById('btnCancelarMed').classList.remove('hidden');
+
+    // Rola a página suavemente até o formulário
+    document.getElementById('medicamentoForm').scrollIntoView({ behavior: 'smooth' });
+}
+
+// 3. CANCELAR EDIÇÃO E RESETAR FORMULÁRIO
+function cancelarEdicaoMedicamento() {
+    document.getElementById('medicamentoForm').reset();
+    document.getElementById('medId').value = '';
+
+    // Restaura interface para modo de cadastro
+    document.getElementById('tituloFormMed').innerText = '➕ Cadastrar medicamento';
+    document.getElementById('btnSalvarMed').innerText = 'Salvar medicamento';
+    document.getElementById('btnCancelarMed').classList.add('hidden');
+    
+    const preview = document.getElementById('previewFoto');
+    if (preview) preview.classList.add('hidden');
+}
+
+// 4. SUBMIT DO FORMULÁRIO (Criação e Atualização)
+document.getElementById('medicamentoForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    const id = document.getElementById('medId').value;
+    const nome = document.getElementById('medNome').value;
+    const dosagem = document.getElementById('medDosagem').value;
+    const horario = document.getElementById('medHorario').value;
+    const frequencia = document.getElementById('medFrequencia').value;
+    const inputFoto = document.getElementById('medFoto');
+
+    // Função interna para salvar os dados no array/localStorage
+    const salvarDados = (fotoData) => {
+        const dadosMedicamento = {
+            nome,
+            dosagem,
+            horario,
+            frequencia,
+            foto: fotoData || (id !== '' ? medicamentos[id].foto : '')
+        };
+
+        if (id !== '') {
+            // Atualiza o medicamento existente
+            medicamentos[id] = dadosMedicamento;
+        } else {
+            // Adiciona novo medicamento
+            medicamentos.push(dadosMedicamento);
+        }
+
+        // Salva e atualiza UI
+        localStorage.setItem('medicamentos', JSON.stringify(medicamentos));
+        cancelarEdicaoMedicamento();
+        renderizarMedicamentos();
+    };
+
+    // Processamento da imagem (se houver upload de nova foto)
+    if (inputFoto.files && inputFoto.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            salvarDados(e.target.result);
+        };
+        reader.readAsDataURL(inputFoto.files[0]);
+    } else {
+        salvarDados(null);
+    }
+});
