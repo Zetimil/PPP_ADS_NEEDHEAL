@@ -156,48 +156,6 @@
                 </button>
             </form>
         </section>
-      <!-- CADASTRO / EDIÇÃO DE MEDICAMENTOS -->
-<section class="card">
-    <h2 id="tituloFormMed">➕ Cadastrar medicamento</h2>
-    <p class="descricao">
-        Preencha as informações do seu medicamento.
-    </p>
-
-    <form id="medicamentoForm">
-        <!-- Campo oculto para armazenar o ID do medicamento durante a edição -->
-        <input type="hidden" id="medId">
-
-        <label>Nome do medicamento</label>
-        <input type="text" id="medNome" placeholder="Ex: Paracetamol" required>
-
-        <label>Dosagem</label>
-        <input type="text" id="medDosagem" placeholder="Ex: 500 mg" required>
-
-        <label>Horário de tomar</label>
-        <input type="time" id="medHorario" required>
-
-        <label>Frequência</label>
-        <select id="medFrequencia">
-            <option value="Todos os dias">Todos os dias</option>
-            <option value="Segunda a sexta">Segunda a sexta</option>
-            <option value="Somente uma vez">Somente uma vez</option>
-        </select>
-
-        <label>Foto do medicamento</label>
-        <input type="file" id="medFoto" accept="image/*">
-
-        <img id="previewFoto" class="preview-foto hidden" alt="Prévia do medicamento">
-
-        <div style="margin-top: 15px; display: flex; gap: 10px;">
-            <button type="submit" id="btnSalvarMed" class="btn-primary">
-                Salvar medicamento
-            </button>
-            <button type="button" id="btnCancelarMed" class="btn-secondary hidden" onclick="cancelarEdicaoMedicamento()">
-                Cancelar edição
-            </button>
-        </div>
-    </form>
-</section>
 
         <!-- LEMBRETES -->
         <section class="card">
