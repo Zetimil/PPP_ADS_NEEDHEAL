@@ -1,23 +1,26 @@
-/* NEEDHEAL - SISTEMA DE LEMBRETES */
+/* NEEDHEAL - SISTEMA DE LEMBRETES COM ALARME DESPERTADOR E PERFIL */
 
-// Dados salvos no navegador
 let usuarios = JSON.parse(localStorage.getItem("nh_usuarios")) || [];
 let medicamentos = JSON.parse(localStorage.getItem("nh_medicamentos")) || [];
 let historico = JSON.parse(localStorage.getItem("nh_historico")) || [];
-
 let usuarioAtual = localStorage.getItem("nh_usuario") || null;
 
-// Conta de administrador demonstrativa
+// Variável para controlar o alarme ativo
+let alarmeAtivoIntervalo = null;
+let medicamentoAlarmeAtual = null;
+
+// Conta admin padrão
 if (!usuarios.some(u => u.nome === "admin")) {
     usuarios.push({
         nome: "admin",
         senha: "admin123",
-        admin: true
+        admin: true,
+        fotoPerfil: ""
     });
     salvarUsuarios();
 }
 
-// SALVAR DADOS
+// PERSISTÊNCIA
 function salvarUsuarios() {
     localStorage.setItem("nh_usuarios", JSON.stringify(usuarios));
 }
@@ -30,125 +33,87 @@ function salvarHistorico() {
     localStorage.setItem("nh_historico", JSON.stringify(historico));
 }
 
-// DATA E HORA
+// AUXILIARES
 function dataHoje() {
     const agora = new Date();
-    const ano = agora.getFullYear();
-    const mes = String(agora.getMonth() + 1).padStart(2, "0");
-    const dia = String(agora.getDate()).padStart(2, "0");
-
-    return `${ano}-${mes}-${dia}`;
+    return agora.toISOString().split("T")[0];
 }
 
 function horarioAtual() {
     const agora = new Date();
-
-    return agora.toLocaleTimeString("pt-BR", {
-        hour: "2-digit",
-        minute: "2-digit"
-    });
+    return agora.toLocaleTimeString("pt-BR", { hour: "2-digit", minute: "2-digit" });
 }
 
 function escapar(texto) {
-    return String(texto).replace(/[&<>"']/g, caractere => ({
-        "&": "&amp;",
-        "<": "&lt;",
-        ">": "&gt;",
-        '"': "&quot;",
-        "'": "&#39;"
-    })[caractere]);
+    return String(texto).replace(/[&<>"']/g, c => ({
+        "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;"
+    })[c]);
 }
 
-// CADASTRO DE USUÁRIO
-function mostrarCadastro() {
-    document.getElementById("cadastroBox").classList.toggle("hidden");
+// AUTENTICAÇÃO E ABAS
+function alternarAbaAuth(aba) {
+    const cadastroBox = document.getElementById("cadastroBox");
+    const recuperarBox = document.getElementById("recuperarBox");
+
+    if (aba === 'cadastro') {
+        cadastroBox.classList.toggle("hidden");
+        recuperarBox.classList.add("hidden");
+    } else if (aba === 'recuperar') {
+        recuperarBox.classList.toggle("hidden");
+        cadastroBox.classList.add("hidden");
+    }
 }
 
-document.getElementById("cadastroForm").addEventListener("submit", function(event) {
-    event.preventDefault();
-
+document.getElementById("cadastroForm").addEventListener("submit", function(e) {
+    e.preventDefault();
     const nome = document.getElementById("cadastroNome").value.trim();
     const senha = document.getElementById("cadastroSenha").value;
 
     if (usuarios.some(u => u.nome.toLowerCase() === nome.toLowerCase())) {
-        alert("Este nome já está cadastrado!");
+        alert("Nome de usuário já cadastrado.");
         return;
     }
 
-    usuarios.push({
-        nome: nome,
-        senha: senha,
-        admin: false
-    });
-
+    usuarios.push({ nome, senha, admin: false, fotoPerfil: "" });
     salvarUsuarios();
-    alert("Cadastro realizado com sucesso!");
 
+    alert("Conta criada com sucesso.");
     document.getElementById("loginNome").value = nome;
     document.getElementById("loginSenha").value = senha;
-    document.getElementById("cadastroForm").reset();
+    this.reset();
     document.getElementById("cadastroBox").classList.add("hidden");
 });
 
-// EXIBIR / OCULTAR BOX DE RECUPERAÇÃO
-function mostrarRecuperacao() {
-    // Se o cadastro estiver aberto, fecha ele
-    document.getElementById("cadastroBox").classList.add("hidden");
-    // Alterna a exibição da recuperação
-    document.getElementById("recuperacaoBox").classList.toggle("hidden");
-}
-
-// Atualize a função mostrarCadastro existente para fechar a recuperação se aberta
-function mostrarCadastro() {
-    document.getElementById("recuperacaoBox").classList.add("hidden");
-    document.getElementById("cadastroBox").classList.toggle("hidden");
-}
-
-// LOGICA DE REDEFINIÇÃO DE SENHA
-document.getElementById("recuperacaoForm").addEventListener("submit", function(event) {
-    event.preventDefault();
-
-    const nome = document.getElementById("recuperaNome").value.trim();
-    const novaSenha = document.getElementById("recuperaNovaSenha").value;
-
-    // Busca o usuário na lista
+document.getElementById("recuperarForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const nome = document.getElementById("recuperarNome").value.trim();
+    const novaSenha = document.getElementById("novaSenha").value;
     const usuario = usuarios.find(u => u.nome.toLowerCase() === nome.toLowerCase());
 
     if (!usuario) {
-        alert("Usuário não encontrado! Verifique o nome digitado.");
+        alert("Usuário não encontrado.");
         return;
     }
 
-    // Atualiza a senha do usuário
     usuario.senha = novaSenha;
-
-    // Salva a alteração no localStorage
     salvarUsuarios();
 
-    alert("Senha redefinida com sucesso! Você já pode fazer login.");
-
-    // Preenche o formulário de login com as novas credenciais
-    document.getElementById("loginNome").value = usuario.nome;
-    document.getElementById("loginSenha").value = novaSenha;
-
-    // Reseta e esconde o formulário de recuperação
+    alert("Senha redefinida com sucesso.");
     this.reset();
-    document.getElementById("recuperacaoBox").classList.add("hidden");
+    document.getElementById("recuperarBox").classList.add("hidden");
 });
 
-// LOGIN
-document.getElementById("loginForm").addEventListener("submit", function(event) {
-    event.preventDefault();
-
+document.getElementById("loginForm").addEventListener("submit", function(e) {
+    e.preventDefault();
     const nome = document.getElementById("loginNome").value.trim();
     const senha = document.getElementById("loginSenha").value;
 
-    const usuario = usuarios.find(u =>
+    const usuario = usuarios.find(u => 
         u.nome.toLowerCase() === nome.toLowerCase() && u.senha === senha
     );
 
     if (!usuario) {
-        alert("Nome ou senha incorretos!");
+        alert("Credenciais inválidas.");
         return;
     }
 
@@ -157,38 +122,43 @@ document.getElementById("loginForm").addEventListener("submit", function(event) 
     iniciarSite();
 });
 
-// SAIR
 function logout() {
     usuarioAtual = null;
     localStorage.removeItem("nh_usuario");
-
     document.getElementById("app").classList.add("hidden");
     document.getElementById("loginSection").classList.remove("hidden");
+    document.querySelector(".btn-sair").classList.add("hidden");
 }
 
-// INICIAR SITE
+// INICIAR APLICAÇÃO E PERFIL
 function iniciarSite() {
     if (!usuarioAtual) return;
 
     const usuario = usuarios.find(u => u.nome === usuarioAtual);
-
-    if (!usuario) {
-        logout();
-        return;
-    }
+    if (!usuario) { logout(); return; }
 
     document.getElementById("loginSection").classList.add("hidden");
     document.getElementById("app").classList.remove("hidden");
     document.querySelector(".btn-sair").classList.remove("hidden");
     document.getElementById("nomeUsuario").textContent = usuario.nome;
 
-    if (document.getElementById("perfilNomeText")) {
-        document.getElementById("perfilNomeText").textContent = usuario.nome;
+    // Atualizar Avatar do Usuário
+    const avatarImg = document.getElementById("avatarImg");
+    const avatarIniciais = document.getElementById("avatarIniciais");
+
+    if (usuario.fotoPerfil) {
+        avatarImg.src = usuario.fotoPerfil;
+        avatarImg.classList.remove("hidden");
+        avatarIniciais.classList.add("hidden");
+    } else {
+        avatarImg.classList.add("hidden");
+        avatarIniciais.classList.remove("hidden");
+        avatarIniciais.textContent = usuario.nome.charAt(0).toUpperCase();
     }
 
     if (usuario.admin) {
         document.getElementById("adminSection").classList.remove("hidden");
-        atualizarUsuarios();
+        atualizarUsuariosAdmin();
     } else {
         document.getElementById("adminSection").classList.add("hidden");
     }
@@ -196,7 +166,6 @@ function iniciarSite() {
     atualizarTela();
 }
 
-// MEDICAMENTOS DO USUÁRIO ATUAL
 function meusMedicamentos() {
     return medicamentos.filter(m => m.usuario === usuarioAtual);
 }
@@ -205,7 +174,47 @@ function meuHistorico() {
     return historico.filter(h => h.usuario === usuarioAtual);
 }
 
-// PREVIEW DE FOTO NO CADASTRO
+// GERENCIAMENTO DO PERFIL (MODAL)
+function abrirModalPerfil() {
+    document.getElementById("perfilModal").classList.remove("hidden");
+}
+
+function fecharModalPerfil() {
+    document.getElementById("perfilModal").classList.add("hidden");
+    document.getElementById("perfilForm").reset();
+}
+
+document.getElementById("perfilForm").addEventListener("submit", function(e) {
+    e.preventDefault();
+    const usuario = usuarios.find(u => u.nome === usuarioAtual);
+    if (!usuario) return;
+
+    const novaSenha = document.getElementById("perfilNovaSenha").value;
+    const fotoInput = document.getElementById("perfilFotoInput");
+
+    if (novaSenha) {
+        usuario.senha = novaSenha;
+    }
+
+    if (fotoInput.files && fotoInput.files[0]) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            usuario.fotoPerfil = e.target.result;
+            salvarUsuarios();
+            fecharModalPerfil();
+            iniciarSite();
+            alert("Perfil atualizado com sucesso.");
+        };
+        reader.readAsDataURL(fotoInput.files[0]);
+    } else {
+        salvarUsuarios();
+        fecharModalPerfil();
+        iniciarSite();
+        alert("Perfil atualizado com sucesso.");
+    }
+});
+
+// FOTO DO MEDICAMENTO
 document.getElementById("medFoto").addEventListener("change", function() {
     const arquivo = this.files[0];
     const preview = document.getElementById("previewFoto");
@@ -215,195 +224,101 @@ document.getElementById("medFoto").addEventListener("change", function() {
         return;
     }
 
-    if (!arquivo.type.startsWith("image/")) {
-        alert("Selecione um arquivo de imagem.");
-        this.value = "";
-        return;
-    }
-
-    if (arquivo.size > 2 * 1024 * 1024) {
-        alert("A foto deve ter no máximo 2 MB.");
-        this.value = "";
-        return;
-    }
-
-    const leitor = new FileReader();
-    leitor.onload = function(e) {
+    const reader = new FileReader();
+    reader.onload = function(e) {
         preview.src = e.target.result;
         preview.classList.remove("hidden");
     };
-    leitor.readAsDataURL(arquivo);
+    reader.readAsDataURL(arquivo);
 });
 
 // CADASTRAR MEDICAMENTO
-document.getElementById("medicamentoForm").addEventListener("submit", function(event) {
-    event.preventDefault();
-
+document.getElementById("medicamentoForm").addEventListener("submit", function(e) {
+    e.preventDefault();
     if (!usuarioAtual) return;
 
     const nome = document.getElementById("medNome").value.trim();
     const dosagem = document.getElementById("medDosagem").value.trim();
     const horario = document.getElementById("medHorario").value;
     const frequencia = document.getElementById("medFrequencia").value;
-    const foto = document.getElementById("previewFoto");
+    const preview = document.getElementById("previewFoto");
 
     const medicamento = {
         id: Date.now().toString(),
         usuario: usuarioAtual,
-        nome: nome,
-        dosagem: dosagem,
-        horario: horario,
-        frequencia: frequencia,
-        foto: foto.classList.contains("hidden") ? "" : foto.src,
-        criadoEm: dataHoje(),
-        ativo: true
+        nome,
+        dosagem,
+        horario,
+        frequencia,
+        foto: preview.classList.contains("hidden") ? "" : preview.src,
+        criadoEm: dataHoje()
     };
 
     medicamentos.push(medicamento);
     salvarMedicamentos();
 
     this.reset();
-    foto.src = "";
-    foto.classList.add("hidden");
+    preview.classList.add("hidden");
+    preview.src = "";
 
     atualizarTela();
-    alert("Medicamento cadastrado com sucesso!");
 });
 
-// VERIFICAR SE O MEDICAMENTO DEVE APARECER HOJE
 function deveTomarHoje(m) {
-    const dia = new Date().getDay();
-
+    const diaSemana = new Date().getDay();
     if (m.frequencia === "Todos os dias") return true;
-    if (m.frequencia === "Segunda a sexta") return dia >= 1 && dia <= 5;
+    if (m.frequencia === "Segunda a sexta") return diaSemana >= 1 && diaSemana <= 5;
     if (m.frequencia === "Somente uma vez") return m.criadoEm === dataHoje();
-
     return true;
 }
 
-// VERIFICAR SE JÁ FOI TOMADO HOJE
 function foiTomadoHoje(id) {
-    return meuHistorico().some(h =>
-        h.medicamentoId === id && h.data === dataHoje()
-    );
+    return meuHistorico().some(h => h.medicamentoId === id && h.data === dataHoje());
 }
 
-// EXIBIR MEDICAMENTOS
+// ATUALIZAÇÃO DA TELA
 function atualizarMedicamentos() {
     const lista = document.getElementById("listaMedicamentos");
+    const programados = meusMedicamentos().filter(deveTomarHoje);
 
-    const meus = meusMedicamentos().filter(m => deveTomarHoje(m));
-
-    if (meus.length === 0) {
-        lista.innerHTML = '<p class="vazio">Nenhum medicamento programado para hoje.</p>';
+    if (programados.length === 0) {
+        lista.innerHTML = '<p class="vazio">Nenhum medicamento agendado para hoje.</p>';
         return;
     }
 
-    // Organiza por horário
-    meus.sort((a, b) => a.horario.localeCompare(b.horario));
+    programados.sort((a, b) => a.horario.localeCompare(b.horario));
 
-    lista.innerHTML = meus.map(m => {
+    lista.innerHTML = programados.map(m => {
         const tomado = foiTomadoHoje(m.id);
-
         return `
-            <article class="medicamento">
-                ${m.foto ? `<img src="${m.foto}" alt="Foto de ${escapar(m.nome)}">` : ""}
-
+            <article class="medicamento-card">
+                ${m.foto ? `<img src="${m.foto}" alt="${escapar(m.nome)}">` : ""}
                 <h3>${escapar(m.nome)}</h3>
+                <p class="medicamento-info">Dosagem: ${escapar(m.dosagem)}</p>
+                <p class="medicamento-info">Frequência: ${escapar(m.frequencia)}</p>
+                <span class="badge-horario">Horário: ${escapar(m.horario)}</span>
 
-                <p><strong>Dosagem:</strong> ${escapar(m.dosagem)}</p>
-                <p><strong>Frequência:</strong> ${escapar(m.frequencia)}</p>
-
-                <div class="horario">
-                    ⏰ ${escapar(m.horario)}
-                </div>
-
-                ${tomado
-                    ? `<div class="status-tomado">✓ Medicamento tomado hoje</div>`
-                    : `<button class="btn-tomado" onclick="marcarTomado('${m.id}')">
-                        ✓ Já tomei este medicamento
-                       </button>`
+                ${tomado 
+                    ? `<div class="status-concluido">Medicamento administrado</div>` 
+                    : `<button class="btn-primary" onclick="marcarTomado('${m.id}')">Confirmar administração</button>`
                 }
-
-                <div class="acoes-card" style="margin-top: 10px; display: flex; gap: 10px;">
-                    <button class="btn-secondary btn-editar" onclick="abrirModalEdicao('${m.id}')">
-                        ✏️ Editar
-                    </button>
-                    <button class="btn-excluir" onclick="excluirMedicamento('${m.id}')">
-                        Excluir
-                    </button>
-                </div>
+                
+                <button class="btn-danger" onclick="excluirMedicamento('${m.id}')">Excluir</button>
             </article>
         `;
     }).join("");
 }
 
-// ==========================================
-// LÓGICA DE EDIÇÃO DE MEDICAMENTOS (MODAL)
-// ==========================================
-
-function abrirModalEdicao(id) {
-    const med = medicamentos.find(m => m.id === id && m.usuario === usuarioAtual);
-    if (!med) return;
-
-    document.getElementById("editMedId").value = med.id;
-    document.getElementById("editMedNome").value = med.nome;
-    document.getElementById("editMedDosagem").value = med.dosagem;
-    document.getElementById("editMedHorario").value = med.horario;
-    document.getElementById("editMedFrequencia").value = med.frequencia;
-
-    document.getElementById("modalEditarMed").classList.remove("hidden");
-}
-
-function fecharModalEdicao() {
-    document.getElementById("modalEditarMed").classList.add("hidden");
-    document.getElementById("editarMedicamentoForm").reset();
-}
-
-// EVENTO SALVAR EDIÇÃO DO MEDICAMENTO
-const editForm = document.getElementById("editarMedicamentoForm");
-if (editForm) {
-    editForm.addEventListener("submit", function(event) {
-        event.preventDefault();
-
-        const id = document.getElementById("editMedId").value;
-        const medIndex = medicamentos.findIndex(m => m.id === id && m.usuario === usuarioAtual);
-
-        if (medIndex !== -1) {
-            medicamentos[medIndex].nome = document.getElementById("editMedNome").value.trim();
-            medicamentos[medIndex].dosagem = document.getElementById("editMedDosagem").value.trim();
-            medicamentos[medIndex].horario = document.getElementById("editMedHorario").value;
-            medicamentos[medIndex].frequencia = document.getElementById("editMedFrequencia").value;
-
-            salvarMedicamentos();
-            atualizarTela();
-            fecharModalEdicao();
-
-            alert("Medicamento atualizado com sucesso!");
-        }
-    });
-}
-
-// MARCAR MEDICAMENTO COMO TOMADO
 function marcarTomado(id) {
-    const medicamento = meusMedicamentos().find(m => m.id === id);
-
-    if (!medicamento) return;
-
-    if (foiTomadoHoje(id)) {
-        alert("Este medicamento já foi marcado como tomado hoje.");
-        return;
-    }
-
-    const confirmar = confirm(`Você tomou ${medicamento.nome} (${medicamento.dosagem})?`);
-    if (!confirmar) return;
+    const med = meusMedicamentos().find(m => m.id === id);
+    if (!med) return;
 
     historico.push({
         id: Date.now().toString(),
         medicamentoId: id,
         usuario: usuarioAtual,
-        nome: medicamento.nome,
-        dosagem: medicamento.dosagem,
+        nome: med.nome,
+        dosagem: med.dosagem,
         data: dataHoje(),
         hora: horarioAtual()
     });
@@ -412,41 +327,37 @@ function marcarTomado(id) {
     atualizarTela();
 }
 
-// EXCLUIR MEDICAMENTO
 function excluirMedicamento(id) {
-    const confirmar = confirm("Deseja realmente excluir este medicamento?");
-    if (!confirmar) return;
+    if (!confirm("Confirma a exclusão deste medicamento?")) return;
 
     medicamentos = medicamentos.filter(m => !(m.id === id && m.usuario === usuarioAtual));
-
     salvarMedicamentos();
     atualizarTela();
 }
 
-// HISTÓRICO
 function atualizarHistorico() {
-    const elemento = document.getElementById("historico");
-    const meus = meuHistorico().slice().reverse();
+    const container = document.getElementById("historico");
+    const registros = meuHistorico().slice().reverse();
 
-    if (meus.length === 0) {
-        elemento.innerHTML = '<p class="vazio">Nenhum medicamento tomado ainda.</p>';
+    if (registros.length === 0) {
+        container.innerHTML = '<p class="vazio">Nenhum registro no histórico.</p>';
         return;
     }
 
-    elemento.innerHTML = meus.map(h => `
+    container.innerHTML = registros.map(h => `
         <div class="historico-item">
-            <strong>✓ ${escapar(h.nome)}</strong>
-            <p>Dosagem: ${escapar(h.dosagem)}</p>
-            <p>Data: ${h.data.split("-").reverse().join("/")}</p>
-            <p>Horário tomado: ${escapar(h.hora)}</p>
+            <div class="historico-detalhes">
+                <strong>${escapar(h.nome)} (${escapar(h.dosagem)})</strong>
+                <span class="historico-data">Administrado às ${escapar(h.hora)}</span>
+            </div>
+            <span class="historico-data">${h.data.split("-").reverse().join("/")}</span>
         </div>
     `).join("");
 }
 
-// RESUMO
 function atualizarResumo() {
     const meus = meusMedicamentos();
-    const programados = meus.filter(m => deveTomarHoje(m));
+    const programados = meus.filter(deveTomarHoje);
     const tomados = meuHistorico().filter(h => h.data === dataHoje());
 
     document.getElementById("totalRemedios").textContent = meus.length;
@@ -454,81 +365,32 @@ function atualizarResumo() {
     document.getElementById("totalTomados").textContent = tomados.length;
 }
 
-// ATUALIZAR TODA A TELA
 function atualizarTela() {
     atualizarMedicamentos();
     atualizarHistorico();
     atualizarResumo();
 }
 
-// NOTIFICAÇÕES
-async function ativarNotificacoes() {
-    if (!("Notification" in window)) {
-        alert("Seu navegador não suporta notificações.");
-        return;
-    }
-
-    const permissao = await Notification.requestPermission();
-
-    if (permissao === "granted") {
-        alert("Notificações ativadas! Mantenha o site aberto para receber os lembretes.");
-        verificarLembretes();
-    } else {
-        alert("Permita as notificações nas configurações do navegador.");
-    }
-}
-
-// VERIFICAR HORÁRIOS
-function verificarLembretes() {
-    if (!usuarioAtual) return;
-
-    const agora = horarioAtual();
-
-    meusMedicamentos()
-        .filter(m => deveTomarHoje(m))
-        .forEach(m => {
-            const chave = `nh_aviso_${usuarioAtual}_${m.id}_${dataHoje()}`;
-
-            if (m.horario === agora && !foiTomadoHoje(m.id) && !sessionStorage.getItem(chave)) {
-                tocarAlerta();
-
-                if ("Notification" in window && Notification.permission === "granted") {
-                    new Notification("NEEDHEAL - Hora do remédio!", {
-                        body: `Está na hora de tomar ${m.nome} (${m.dosagem}).`,
-                        icon: m.foto || undefined
-                    });
-                }
-
-                sessionStorage.setItem(chave, "1");
-            }
-        });
-}
-
-// PAINEL ADMINISTRATIVO
-function atualizarUsuarios() {
+// PAINEL ADMINISTRADOR
+function atualizarUsuariosAdmin() {
     const lista = document.getElementById("listaUsuarios");
-    const comuns = usuarios.filter(u => !u.admin);
+    const usuariosComuns = usuarios.filter(u => !u.admin);
 
-    if (comuns.length === 0) {
+    if (usuariosComuns.length === 0) {
         lista.innerHTML = '<p class="vazio">Nenhum usuário cadastrado.</p>';
         return;
     }
 
-    lista.innerHTML = comuns.map(u => `
+    lista.innerHTML = usuariosComuns.map(u => `
         <div class="usuario-item">
-            <strong>👤 ${escapar(u.nome)}</strong>
-            <button onclick="excluirUsuario('${escapar(u.nome)}')">Excluir usuário</button>
+            <span>${escapar(u.nome)}</span>
+            <button class="btn-danger" onclick="excluirUsuarioAdmin('${escapar(u.nome)}')">Excluir conta</button>
         </div>
     `).join("");
 }
 
-// EXCLUIR USUÁRIO PELO ADMIN
-function excluirUsuario(nome) {
-    const usuario = usuarios.find(u => u.nome === nome && !u.admin);
-
-    if (!usuario) return;
-
-    if (!confirm(`Deseja excluir o usuário ${nome} e seus dados?`)) return;
+function excluirUsuarioAdmin(nome) {
+    if (!confirm(`Remover permanentemente a conta de ${nome}?`)) return;
 
     usuarios = usuarios.filter(u => u.nome !== nome);
     medicamentos = medicamentos.filter(m => m.usuario !== nome);
@@ -538,56 +400,92 @@ function excluirUsuario(nome) {
     salvarMedicamentos();
     salvarHistorico();
 
-    atualizarUsuarios();
-    alert("Usuário excluído com sucesso!");
+    atualizarUsuariosAdmin();
 }
 
-/* SOM DO ALERTA NEEDHEAL */
-let audioContext = null;
+// SISTEMA DE ALARME DESPERTADOR (SOM CONTÍNUO E MODAL BLOQUEANTE)
+let audioCtx = null;
 
-function prepararAudio() {
-    if (!audioContext) {
-        audioContext = new (window.AudioContext || window.webkitAudioContext)();
-    }
+function emitirSomDespertador() {
+    try {
+        if (!audioCtx) audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        if (audioCtx.state === "suspended") audioCtx.resume();
 
-    if (audioContext.state === "suspended") {
-        audioContext.resume();
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.type = "square";
+        osc.frequency.setValueAtTime(880, audioCtx.currentTime); // Tom de alarme
+
+        gain.gain.setValueAtTime(0.2, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.8);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 0.8);
+    } catch (e) {
+        console.error("Áudio bloqueado pelo navegador.");
     }
 }
 
-function tocarAlerta() {
-    prepararAudio();
+function dispararAlarmeDespertador(med) {
+    medicamentoAlarmeAtual = med;
+    
+    // Atualizar modal
+    document.getElementById("alarmeTextoMedicamento").textContent = `Está na hora de tomar: ${med.nome} (${med.dosagem})`;
+    
+    const fotoContainer = document.getElementById("alarmeFotoContainer");
+    const alarmeFoto = document.getElementById("alarmeFoto");
+    if (med.foto) {
+        alarmeFoto.src = med.foto;
+        fotoContainer.classList.remove("hidden");
+    } else {
+        fotoContainer.classList.add("hidden");
+    }
 
-    const frequencias = [880, 660, 880];
+    document.getElementById("alarmeModal").classList.remove("hidden");
 
-    frequencias.forEach((frequencia, index) => {
-        const oscilador = audioContext.createOscillator();
-        const volume = audioContext.createGain();
+    // Tocar o alarme imediatamente e repetir a cada 1 segundo até o usuário desligar
+    emitirSomDespertador();
+    if (!alarmeAtivoIntervalo) {
+        alarmeAtivoIntervalo = setInterval(() => {
+            emitirSomDespertador();
+        }, 1000);
+    }
+}
 
-        oscilador.connect(volume);
-        volume.connect(audioContext.destination);
+function desligarAlarme() {
+    if (alarmeAtivoIntervalo) {
+        clearInterval(alarmeAtivoIntervalo);
+        alarmeAtivoIntervalo = null;
+    }
 
-        oscilador.type = "sine";
-        oscilador.frequency.value = frequencia;
+    document.getElementById("alarmeModal").classList.add("hidden");
 
-        const inicio = audioContext.currentTime + index * 0.35;
+    if (medicamentoAlarmeAtual) {
+        marcarTomado(medicamentoAlarmeAtual.id);
+        medicamentoAlarmeAtual = null;
+    }
+}
 
-        volume.gain.setValueAtTime(0.001, inicio);
-        volume.gain.exponentialRampToValueAtTime(0.5, inicio + 0.05);
-        volume.gain.exponentialRampToValueAtTime(0.001, inicio + 0.3);
+function verificarLembretes() {
+    if (!usuarioAtual || alarmeAtivoIntervalo) return; // Se já estiver tocando um alarme, aguarda
+    const agora = horarioAtual();
 
-        oscilador.start(inicio);
-        oscilador.stop(inicio + 0.3);
+    meusMedicamentos().filter(deveTomarHoje).forEach(m => {
+        const chave = `nh_notif_${usuarioAtual}_${m.id}_${dataHoje()}`;
+
+        if (m.horario === agora && !foiTomadoHoje(m.id) && !sessionStorage.getItem(chave)) {
+            sessionStorage.setItem(chave, "1");
+            dispararAlarmeDespertador(m);
+        }
     });
 }
 
-document.addEventListener("click", prepararAudio);
-document.addEventListener("keydown", prepararAudio);
-
 // INICIALIZAÇÃO
 document.addEventListener("DOMContentLoaded", function() {
-    document.querySelector(".btn-sair").classList.toggle("hidden", !usuarioAtual);
-
     if (usuarioAtual) {
         iniciarSite();
     } else {
@@ -596,81 +494,4 @@ document.addEventListener("DOMContentLoaded", function() {
     }
 });
 
-// VERIFICA OS LEMBRETES A CADA SEGUNDO
 setInterval(verificarLembretes, 1000);
-
-// ==========================================
-// LÓGICA DE EDIÇÃO DO PERFIL DO USUÁRIO
-// ==========================================
-
-function alternarEdicaoPerfil(editando) {
-    const perfilExibicao = document.getElementById("perfilExibicao");
-    const perfilForm = document.getElementById("perfilForm");
-    const perfilNomeInput = document.getElementById("perfilNomeInput");
-
-    if (editando) {
-        perfilForm.classList.remove("hidden");
-        perfilExibicao.classList.add("hidden");
-        perfilNomeInput.value = usuarioAtual;
-    } else {
-        perfilForm.classList.add("hidden");
-        perfilExibicao.classList.remove("hidden");
-    }
-}
-
-const perfilFormElement = document.getElementById("perfilForm");
-if (perfilFormElement) {
-    perfilFormElement.addEventListener("submit", function(event) {
-        event.preventDefault();
-
-        const novoNome = document.getElementById("perfilNomeInput").value.trim();
-
-        if (!novoNome) return;
-
-        if (novoNome === usuarioAtual) {
-            alternarEdicaoPerfil(false);
-            return;
-        }
-
-        const jaExiste = usuarios.some(u => 
-            u.nome.toLowerCase() === novoNome.toLowerCase() && u.nome !== usuarioAtual
-        );
-
-        if (jaExiste) {
-            alert("Este nome já está em uso por outro usuário!");
-            return;
-        }
-
-        const nomeAntigo = usuarioAtual;
-
-        const usuarioObj = usuarios.find(u => u.nome === nomeAntigo);
-        if (usuarioObj) {
-            usuarioObj.nome = novoNome;
-        }
-
-        medicamentos.forEach(m => {
-            if (m.usuario === nomeAntigo) {
-                m.usuario = novoNome;
-            }
-        });
-
-        historico.forEach(h => {
-            if (h.usuario === nomeAntigo) {
-                h.usuario = novoNome;
-            }
-        });
-
-        usuarioAtual = novoNome;
-        localStorage.setItem("nh_usuario", novoNome);
-
-        salvarUsuarios();
-        salvarMedicamentos();
-        salvarHistorico();
-
-        document.getElementById("perfilNomeText").textContent = novoNome;
-        document.getElementById("nomeUsuario").textContent = novoNome;
-
-        alternarEdicaoPerfil(false);
-        alert("Perfil atualizado com sucesso!");
-    });
-}
